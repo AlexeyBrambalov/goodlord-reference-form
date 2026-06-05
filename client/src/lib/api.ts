@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { ReferenceFormValues, Relationship } from './schema'
 
-const baseURL = import.meta.env.VITE_API_URL ?? 'https://ref-api.goodlord.co'
+const baseURL = import.meta.env?.VITE_API_URL ?? 'https://ref-api.goodlord.co'
 
 export const apiClient = axios.create({
   baseURL,

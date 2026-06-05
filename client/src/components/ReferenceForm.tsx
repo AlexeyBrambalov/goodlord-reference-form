@@ -1,49 +1,11 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { effectTsResolver } from '@hookform/resolvers/effect-ts'
-import { createReference } from '../lib/api'
-import { defaultReferenceValues, ReferenceForm as ReferenceSchema } from '../lib/schema'
-import type { ReferenceFormValues } from '../lib/schema'
+import { useReferenceForm } from '../hooks/useReferenceForm'
 import { PersonalSection } from './PersonalSection'
 import { EmployerSection } from './EmployerSection'
 import { GuarantorSection } from './GuarantorSection'
 
-type SubmitStatus =
-  | { state: 'idle' }
-  | { state: 'success' }
-  | { state: 'error'; message: string }
-
 export function ReferenceForm() {
-  const [status, setStatus] = useState<SubmitStatus>({ state: 'idle' })
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<ReferenceFormValues>({
-    resolver: effectTsResolver(ReferenceSchema),
-    defaultValues: defaultReferenceValues,
-  })
-
-  const onSubmit = handleSubmit(async (data) => {
-    setStatus({ state: 'idle' })
-    try {
-      await createReference(data)
-      reset(defaultReferenceValues)
-      setStatus({ state: 'success' })
-    } catch {
-      setStatus({
-        state: 'error',
-        message: 'Something went wrong while submitting. Please try again.',
-      })
-    }
-  })
-
-  const onCancel = () => {
-    reset(defaultReferenceValues)
-    setStatus({ state: 'idle' })
-  }
+  const { register, errors, isSubmitting, status, onSubmit, onCancel } =
+    useReferenceForm()
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-6">
@@ -52,12 +14,18 @@ export function ReferenceForm() {
       <GuarantorSection register={register} errors={errors.guarantor} />
 
       {status.state === 'success' && (
-        <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
+        <p
+          role="status"
+          className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-700"
+        >
           Reference submitted successfully.
         </p>
       )}
       {status.state === 'error' && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {status.message}
         </p>
       )}
