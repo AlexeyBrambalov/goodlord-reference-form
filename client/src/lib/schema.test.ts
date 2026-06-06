@@ -33,4 +33,60 @@ describe('ReferenceForm schema', () => {
     })
     expect(Either.isLeft(result)).toBe(true)
   })
+
+  it('rejects text longer than its max length', () => {
+    const result = decode({
+      ...validForm,
+      personal: { ...validForm.personal, first_name: 'a'.repeat(101) },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects a malformed date', () => {
+    const result = decode({
+      ...validForm,
+      employer: { ...validForm.employer, start_date: '20180301' },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects a date earlier than 1970', () => {
+    const result = decode({
+      ...validForm,
+      employer: { ...validForm.employer, start_date: '1969-12-31' },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects a date later than 2100', () => {
+    const result = decode({
+      ...validForm,
+      employer: { ...validForm.employer, end_date: '2101-01-01' },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects an end date earlier than the start date', () => {
+    const result = decode({
+      ...validForm,
+      employer: {
+        ...validForm.employer,
+        start_date: '2019-08-15',
+        end_date: '2018-03-01',
+      },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects an end date equal to the start date', () => {
+    const result = decode({
+      ...validForm,
+      employer: {
+        ...validForm.employer,
+        start_date: '2018-03-01',
+        end_date: '2018-03-01',
+      },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
 })

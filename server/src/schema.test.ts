@@ -41,4 +41,44 @@ describe('ReferenceApi schema', () => {
     })
     expect(Either.isLeft(result)).toBe(true)
   })
+
+  it('rejects text longer than its max length', () => {
+    const result = decode({
+      ...validPayload,
+      personal: { ...validPayload.personal, first_name: 'a'.repeat(101) },
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects a date earlier than 1970', () => {
+    const result = decode({
+      ...validPayload,
+      employer: [{ name: 'E', start_date: '19691231', end_date: '20190815' }],
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects a date later than 2100', () => {
+    const result = decode({
+      ...validPayload,
+      employer: [{ name: 'E', start_date: '20180301', end_date: '21010101' }],
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects an end date earlier than the start date', () => {
+    const result = decode({
+      ...validPayload,
+      employer: [{ name: 'E', start_date: '20190815', end_date: '20180301' }],
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
+
+  it('rejects an end date equal to the start date', () => {
+    const result = decode({
+      ...validPayload,
+      employer: [{ name: 'E', start_date: '20180301', end_date: '20180301' }],
+    })
+    expect(Either.isLeft(result)).toBe(true)
+  })
 })
